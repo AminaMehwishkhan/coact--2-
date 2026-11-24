@@ -207,6 +207,16 @@ footer{padding:16px 20px 28px;color:var(--dimmer);font-size:12px;border-top:1px 
       <div class="note" id="speechNote">Speechmatics: checking…</div>
     </section>
 
+    <section class="card" id="videoCard" hidden>
+      <h3>Recorded episode · real MuJoCo physics</h3>
+      <video id="demoVideo" controls preload="metadata" poster="agent_views.png"
+             style="width:100%;display:block;background:#06090D"></video>
+      <div class="note">The full arc on real physics, with the gate state burned into the frame:
+        disagreement → execution blocked → hover confirmation → spoken correction → re-grounding →
+        consensus restored → commit. The schematic above is a model of the same table; this is the
+        simulator itself.</div>
+    </section>
+
     <section class="card" id="resultsCard">
       <h3>Benchmark · 90 randomised trials</h3>
       <div class="body" id="resultsBody"></div>
@@ -743,6 +753,20 @@ async function loadBenchmark(){
   renderResults(RECORDED.rows, RECORDED.meta.trials, false);
 }
 
+/* --------------------------------- video ------------------------------------ */
+// The recorded episode is the evidence that the physics is real, so it belongs
+// on the page rather than in a file path in the footer. It is only shown if it
+// is actually sitting next to this page — a static host without it gets no
+// broken player.
+async function loadVideo(){
+  for(const src of ['coact_demo.mp4','results/coact_demo.mp4']){
+    try{
+      const r=await fetch(src,{method:'HEAD'});
+      if(r.ok){ $('demoVideo').src=src; $('videoCard').hidden=false; return; }
+    }catch(e){}
+  }
+}
+
 /* ---------------------------------- boot ------------------------------------ */
 const pill=(n,on,d)=>`<span class="pill ${on?'on':'off'}" title="${d}"><i class="dot"></i>${n}</span>`;
 async function boot(){
@@ -778,6 +802,7 @@ async function boot(){
     recordedFeeds();
   }
   loadBenchmark();
+  loadVideo();
   resetAll(true);
   log('CoAct ready — pick a scenario, or press Run full demo','ok');
 }

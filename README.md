@@ -12,6 +12,9 @@ the time. CoAct brings that to **5.6%**, with every remaining failure in the one
 plate is hidden from a camera — and one spoken correction then recovers task completion from 35.6%
 to **67.8%**.
 
+**[▶ Live demo](https://aminamehwishkhan.github.io/coact--1-/)** · the interactive gate, the
+recorded episode, and the measured benchmark — no install.
+
 ---
 
 ## The problem
@@ -295,8 +298,23 @@ is not true.
 
 ## Deployment
 
-`render.yaml` and `Procfile` are included; health check is `GET /api/health`. The dashboard detects
-whether a physics backend is reachable and says which mode it is in rather than pretending.
+There are two things worth hosting, and they have different requirements.
+
+**The dashboard, as a static page.** `docs/` holds a self-contained copy — the page, the
+two-camera figure and the recorded episode. GitHub Pages serves it from there with no build step
+and no backend: the gate logic runs in the browser against a geometric model of the same table,
+and the page says so. This is what the live demo link above points at.
+
+**The full system, with live cameras.** This needs MuJoCo rendering through EGL, so it has to be a
+container — a plain Python buildpack has no way to install the GL libraries. The `Dockerfile`
+handles it, defaults to port 7860 for Hugging Face Spaces, and honours `$PORT` for Render, Fly or
+Cloud Run. It also renders one frame at build time and fails the build if EGL comes back blank,
+rather than shipping an image that quietly serves the no-physics fallback.
+`deploy/README-huggingface.md` is the Space front matter.
+
+`render.yaml` and `Procfile` remain for a non-Docker deploy; that path runs without physics and the
+dashboard reports it. Health check is `GET /api/health`, which states plainly which services are
+actually connected.
 
 ---
 
